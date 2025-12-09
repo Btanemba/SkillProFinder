@@ -61,6 +61,18 @@ class FortifyServiceProvider extends ServiceProvider
         
         // Custom redirect after registration
         Fortify::redirects('register', function (Request $request) {
+            // Store the service_id if present for post-verification redirect
+            if (session('service_id_after_register')) {
+                // Keep it in session for after verification
+            }
+            // Always redirect to email verification after registration
+            return route('verification.notice');
+        });
+        
+        // Custom redirect after email verification
+        Fortify::redirects('email-verification', function (Request $request) {
+            $user = $request->user();
+            
             // Check session for service ID (stored during registration)
             if (session('service_id_after_register')) {
                 $serviceId = session('service_id_after_register');
@@ -69,7 +81,6 @@ class FortifyServiceProvider extends ServiceProvider
             }
             
             // Redirect based on user type
-            $user = $request->user();
             if ($user && $user->user_type === 'provider') {
                 return '/admin/dashboard';
             }

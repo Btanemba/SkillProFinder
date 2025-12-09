@@ -59,7 +59,7 @@ return [
     // Set this to true if you would like to enable email verification for your user model.
     // Make sure your user model implements the MustVerifyEmail contract and your database
     // table contains the `email_verified_at` column.
-    'setup_email_verification_routes' => false,
+    'setup_email_verification_routes' => true,
 
     // When email verification is enabled, automatically add the Verified middleware to Backpack routes?
     // Set false if you want to use your own Verified middleware in `middleware_class`.
@@ -111,6 +111,7 @@ return [
     // Can be a single class or an array of classes
     'middleware_class' => [
         App\Http\Middleware\CheckIfAdmin::class,
+        \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Backpack\CRUD\app\Http\Middleware\AuthenticateSession::class,
         // \Backpack\CRUD\app\Http\Middleware\UseBackpackAuthGuardInsteadOfDefaultAuthGuard::class,
