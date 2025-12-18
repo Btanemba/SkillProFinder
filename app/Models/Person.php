@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class Person extends Model
+ 
 {
     use CrudTrait;
 
@@ -31,6 +32,16 @@ class Person extends Model
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+       // Accessor for Backpack custom view field
+    public function getProfilePictureDisplayAttribute()
+    {
+        if ($this->profile_picture) {
+            // Use asset() to generate the correct URL for the stored image
+            return '<img src="' . asset('storage/' . $this->profile_picture) . '" style="max-width:100px; border-radius:8px;">';
+        }
+        return '';
     }
 
     /**

@@ -55,6 +55,14 @@ class BookingController extends Controller
     {
         $booking = Booking::with(['service.person.user'])->findOrFail($bookingId);
         
+        // Debug logging for troubleshooting
+        \Log::info('Booking confirmation debug', [
+            'booking_id' => $bookingId,
+            'booking_client_id' => $booking->client_id,
+            'auth_id' => \Auth::id(),
+            'user' => \Auth::user(),
+        ]);
+
         // Make sure the booking belongs to the authenticated user
         if ($booking->client_id !== Auth::id()) {
             abort(403);

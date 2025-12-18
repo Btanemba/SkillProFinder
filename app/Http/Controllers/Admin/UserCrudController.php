@@ -7,24 +7,26 @@ use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use League\ISO3166\ISO3166;
 
-/**
- * Class UserCrudController
- * @package App\Http\Controllers\Admin
- * @property-read \Backpack\CRUD\app\Library\CrudPanel\CrudPanel $crud
- */
 class UserCrudController extends CrudController
 {
+    /*
+    |--------------------------------------------------------------------------
+    | CRUD Operations
+    |--------------------------------------------------------------------------
+    */
+
     use \Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
 
-    /**
-     * Configure the CrudPanel object. Apply settings to all operations.
-     * 
-     * @return void
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | SETUP
+    |--------------------------------------------------------------------------
+    */
+
     public function setup()
     {
         CRUD::setModel(\App\Models\User::class);
@@ -32,12 +34,12 @@ class UserCrudController extends CrudController
         CRUD::setEntityNameStrings('user', 'users');
     }
 
-    /**
-     * Define what happens when the List operation is loaded.
-     * 
-     * @see  https://backpackforlaravel.com/docs/crud-operation-list-entries
-     * @return void
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | LIST
+    |--------------------------------------------------------------------------
+    */
+
     protected function setupListOperation()
     {
         CRUD::column('first_name')->label('First Name');
@@ -49,21 +51,35 @@ class UserCrudController extends CrudController
         CRUD::column('created_at')->label('Registered At')->type('datetime');
     }
 
-    /**
-     * Define what happens when the Create operation is loaded.
-     * 
-     * @see https://backpackforlaravel.com/docs/crud-operation-create
-     * @return void
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE
+    |--------------------------------------------------------------------------
+    */
+
     protected function setupCreateOperation()
     {
         CRUD::setValidation(UserRequest::class);
-        
-      
-         CRUD::field('first_name')->label('First Name')->type('text')->tab('General Info')->wrapper(['class' => 'form-group col-md-6']);
-        CRUD::field('last_name')->label('Last Name')->type('text')->tab('General Info')->wrapper(['class' => 'form-group col-md-6']);
-       
-            CRUD::addField([
+
+        /*
+        |------------------------
+        | General Info
+        |------------------------
+        */
+
+        CRUD::field('first_name')
+            ->label('First Name')
+            ->type('text')
+            ->tab('General Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::field('last_name')
+            ->label('Last Name')
+            ->type('text')
+            ->tab('General Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::addField([
             'name'  => 'person.profile_picture',
             'label' => 'Display Photo',
             'type'  => 'upload',
@@ -72,40 +88,45 @@ class UserCrudController extends CrudController
             'disk'  => 'public',
             'wrapper' => ['class' => 'form-group col-md-6'],
         ]);
+
         CRUD::addField([
             'name' => 'person.profile_picture_display',
             'type' => 'view',
             'view' => 'vendor.backpack.crud.fields.profile_picture_display',
             'label' => ' ',
             'tab' => 'General Info',
-            'wrapper' => [
-                'class' => 'form-group col-md-6',
-            ],
+            'wrapper' => ['class' => 'form-group col-md-6'],
         ]);
+
+        CRUD::field('email')
+            ->label('Email')
+            ->type('email')
+            ->tab('General Info')
+            ->attributes(['readonly' => 'readonly', 'style' => 'background-color: #e9ecef;'])
+            ->wrapper(['class' => 'form-group col-md-12']);
+
+        /*
+        |------------------------
+        | Address Info
+        |------------------------
+        */
         
-        // User Information - Right Side
-       
-        CRUD::field('email')->label('Email')->type('email')->tab('General Info')->attributes(['readonly' => 'readonly', 'style' => 'background-color: #e9ecef;'])->wrapper(['class' => 'form-group col-md-12']);
-        
-        // CRUD::field('password')->label('Password')->type('password')->tab('General Info');
-          // Field for Photo - Left Side (3 columns)
-    
-        // Person Information
         CRUD::field('person.country')
             ->label('Country Of Residence')
             ->tab('Address Info')
             ->type('select_from_array')
-            ->options(collect([
-                'GB' => 'United Kingdom',
-                'separator' => '──────────',
-            ])->merge(
-                collect((new \League\ISO3166\ISO3166())->all())
-                    ->pluck('name', 'alpha2')
-                    ->sort()
-            )->toArray())
+            ->options(
+                collect(['GB' => 'United Kingdom', 'separator' => '──────────'])
+                ->merge(
+                    collect((new ISO3166())->all())
+                        ->pluck('name', 'alpha2')
+                        ->sort()
+                )
+                ->toArray()
+            )
             ->wrapper(['class' => 'form-group col-md-6'])
             ->attributes(['data-separator-key' => 'separator', 'id' => 'country-field']);
-        
+
         CRUD::field('person.city')
             ->label('City of Residence')
             ->tab('Address Info')
@@ -113,215 +134,263 @@ class UserCrudController extends CrudController
             ->options([])
             ->wrapper(['class' => 'form-group col-md-6'])
             ->attributes(['id' => 'city-field']);
-        
-        CRUD::field('person.home_address')->label('Home Address')->type('text')->tab('Address Info')->wrapper(['class' => 'form-group col-md-6']);
-        CRUD::field('person.house_number')->label('House Number')->type('text')->tab('Address Info')->wrapper(['class' => 'form-group col-md-6']);
-        CRUD::field('person.postal_code')->label('Postal Code')->type('text')->tab('Address Info')->wrapper(['class' => 'form-group col-md-6']);
-        CRUD::field('person.postbox')->label('Post Box')->type('text')->tab('Address Info')->wrapper(['class' => 'form-group col-md-6']);
-        CRUD::field('person.phone')->label('Phone')->type('text')->tab('Address Info')->wrapper(['class' => 'form-group col-md-6']);
 
-        // Add city loader script
+        CRUD::field('person.home_address')
+            ->label('Home Address')
+            ->type('text')
+            ->tab('Address Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::field('person.house_number')
+            ->label('House Number')
+            ->type('text')
+            ->tab('Address Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::field('person.postal_code')
+            ->label('Postal Code')
+            ->type('text')
+            ->tab('Address Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::field('person.postbox')
+            ->label('Post Box')
+            ->type('text')
+            ->tab('Address Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        CRUD::field('person.phone')
+            ->label('Phone')
+            ->type('text')
+            ->tab('Address Info')
+            ->wrapper(['class' => 'form-group col-md-6']);
+
+        /*
+        |------------------------
+        | City loader script
+        |------------------------
+        */
+
         $savedCity = null;
-        if ($this->crud->getCurrentOperation() == 'update') {
+        if ($this->crud->getCurrentOperation() === 'update') {
             $entry = $this->crud->getCurrentEntry();
             if ($entry && $entry->person) {
                 $savedCity = $entry->person->city;
             }
         }
-        
-        CRUD::field('city_loader_script')->type('custom_html')->value('
-            <script>
-            function initCityLoader() {
-                if (typeof $ === "undefined") {
-                    setTimeout(initCityLoader, 100);
-                    return;
-                }
-                
-                setTimeout(function() {
-                    var countryField = $("select[name=\'person[country]\']");
-                    var cityField = $("select[name=\'person[city]\']");
-                    var cityWrapper = cityField.closest(".form-group");
+
+        CRUD::field('city_loader_script')
+            ->type('custom_html')
+            ->value('
+                <script>
+                function initCityLoader() {
+                    if (typeof $ === "undefined") {
+                        setTimeout(initCityLoader, 100);
+                        return;
+                    }
                     
-                    var savedCity = ' . json_encode($savedCity) . ';
-                    
-                    function loadCities(countryCode, selectedCity) {
-                        if (countryCode === "GB") {
-                            cityWrapper.show();
-                            cityField.prop("disabled", true);
-                            cityField.empty().append("<option value=\'\'>Loading cities...</option>");
-                            
-                            $.ajax({
-                                url: "/admin/user/cities/" + countryCode,
-                                method: "GET",
-                                dataType: "json",
-                                success: function(cities) {
-                                    cityField.empty();
-                                    cityField.append("<option value=\'\'>Select a city</option>");
-                                    
+                    setTimeout(function() {
+                        var countryField = $("select[name=\'person[country]\']");
+                        var cityField = $("select[name=\'person[city]\']");
+                        var cityWrapper = cityField.closest(".form-group");
+                        
+                        var savedCity = ' . json_encode($savedCity) . ';
+                        
+                        function loadCities(countryCode, selectedCity) {
+                            if (countryCode === "GB") {
+                                cityWrapper.show();
+                                cityField.prop("disabled", true);
+                                cityField.empty().append("<option>Loading...</option>");
+                                
+                                $.get("/admin/user/cities/" + countryCode, function(cities) {
+                                    cityField.empty().append("<option value=\'\'>Select a city</option>");
                                     $.each(cities, function(key, value) {
-                                        var option = $("<option></option>")
-                                            .attr("value", key)
-                                            .text(value);
-                                        if (selectedCity && key === selectedCity) {
-                                            option.prop("selected", true);
-                                        }
-                                        cityField.append(option);
+                                        cityField.append(
+                                            $("<option>").val(key).text(value)
+                                        );
                                     });
-                                    
                                     cityField.prop("disabled", false);
-                                    
+
                                     if (selectedCity) {
-                                        setTimeout(function() {
-                                            cityField.val(selectedCity);
-                                        }, 100);
+                                        cityField.val(selectedCity);
                                     }
+                                });
+                            } else {
+                                cityWrapper.hide();
+                                cityField.val("");
+                            }
+                        }
+                        
+                        countryField.on("change", function() {
+                            var selectedCountry = $(this).val();
+                            if (selectedCountry && selectedCountry !== "separator") {
+                                loadCities(selectedCountry);
+                            } else {
+                                cityWrapper.hide();
+                            }
+                        });
+                        
+                        var initialCountry = countryField.val();
+                        if (initialCountry && initialCountry !== "separator") {
+                            loadCities(initialCountry, savedCity);
+                        } else {
+                            cityWrapper.hide();
+                        }
+                    }, 1000);
+                }
+                initCityLoader();
+                </script>
+            ')
+            ->tab("Address Info");
+
+        /*
+        |------------------------
+        | Photo preview script
+        |------------------------
+        */
+
+        CRUD::field('photo_preview_script')
+            ->type('custom_html')
+            ->value('
+                <script>
+                function initPhotoPreview() {
+                    if (typeof $ === "undefined") {
+                        setTimeout(initPhotoPreview, 100);
+                        return;
+                    }
+                    
+                    setTimeout(function() {
+                        var fileInput = $("input[name=\'person[profile_picture]\']");
+                        var preview = $("#photo-preview");
+                        
+                        if (fileInput.length && preview.length) {
+                            fileInput.on("change", function(e) {
+                                var file = e.target.files[0];
+                                if (file) {
+                                    var reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        preview.html(
+                                            `<img src="${e.target.result}" 
+                                                  style="max-width:200px; max-height:200px; border-radius:8px;">`
+                                        );
+                                    }
+                                    reader.readAsDataURL(file);
                                 }
                             });
                         } else {
-                            cityWrapper.hide();
-                            cityField.val("");
+                            setTimeout(initPhotoPreview, 500);
                         }
-                    }
-                    
-                    countryField.on("change", function() {
-                        var selectedCountry = $(this).val();
-                        if (selectedCountry && selectedCountry !== "separator") {
-                            loadCities(selectedCountry);
-                        } else {
-                            cityWrapper.hide();
-                        }
-                    });
-                    
-                    // Initial load
-                    var initialCountry = countryField.val();
-                    if (initialCountry && initialCountry !== "" && initialCountry !== "separator") {
-                        loadCities(initialCountry, savedCity);
-                    } else {
-                        cityWrapper.hide();
-                    }
-                }, 1000);
-            }
-            initCityLoader();
-            </script>
-        ')->tab("Address Info");
-
-        // Add photo preview JavaScript
-        CRUD::field('photo_preview_script')->type('custom_html')->value('
-            <script>
-            function initPhotoPreview() {
-                if (typeof $ === "undefined") {
-                    setTimeout(initPhotoPreview, 100);
-                    return;
+                    }, 1000);
                 }
-                
-                setTimeout(function() {
-                    var fileInput = $("input[name=\'person[profile_picture]\']");
-                    var preview = $("#photo-preview");
-                    
-                    console.log("Photo preview initialized");
-                    console.log("File input found:", fileInput.length);
-                    console.log("Preview div found:", preview.length);
-                    
-                    if (fileInput.length && preview.length) {
-                        fileInput.on("change", function(e) {
-                            console.log("File input changed");
-                            var file = e.target.files[0];
-                            if (file) {
-                                console.log("File selected:", file.name);
-                                var reader = new FileReader();
-                                reader.onload = function(e) {
-                                    console.log("File loaded, updating preview");
-                                    preview.html(\'<img src="\' + e.target.result + \'" style="max-width: 200px; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">\');
-                                }
-                                reader.readAsDataURL(file);
-                            }
-                        });
-                    } else {
-                        console.log("Retrying photo preview initialization...");
-                        setTimeout(initPhotoPreview, 500);
-                    }
-                }, 1000);
-            }
-            initPhotoPreview();
-            </script>
-        ')->tab('General Info');
+                initPhotoPreview();
+                </script>
+            ')
+            ->tab('General Info');
     }
 
-    /**
-     * Define what happens when the Update operation is loaded.
-     * 
-     * @see https://backpackforlaravel.com/docs/crud-operation-update
-     * @return void
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE
+    |--------------------------------------------------------------------------
+    */
+
     protected function setupUpdateOperation()
     {
         $this->setupCreateOperation();
     }
 
-    /**
-     * Get cities for a specific country
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | AJAX: Get Cities
+    |--------------------------------------------------------------------------
+    */
+
     public function getCities($countryCode)
     {
-        $cities = $this->getCitiesByCountry($countryCode);
-        return response()->json($cities);
+        return response()->json($this->getCitiesByCountry($countryCode));
     }
 
-    /**
-     * Return cities based on country code using external API
-     */
     private function getCitiesByCountry($countryCode)
     {
-        switch ($countryCode) {
-            case 'GB':
-                return $this->getUKCities();
-            default:
-                return [];
-        }
+        return $countryCode === 'GB'
+            ? $this->getUKCities()
+            : [];
     }
 
-    /**
-     * Get all UK cities from JSON file
-     */
     private function getUKCities()
     {
         $jsonPath = storage_path('app/uk-cities.json');
-        
+
         if (file_exists($jsonPath)) {
             $cities = json_decode(file_get_contents($jsonPath), true);
-            $cityOptions = [];
-            foreach ($cities as $city) {
-                $cityOptions[$city] = $city;
-            }
-            return $cityOptions;
+            return collect($cities)->mapWithKeys(fn($c) => [$c => $c])->toArray();
         }
-        
-        // Fallback to static list if file not found
+
         return $this->getStaticUKCities();
     }
 
-    /**
-     * Static UK cities as fallback
-     */
     private function getStaticUKCities()
     {
-        // Load from JSON file
-        $jsonPath = storage_path('app/uk-cities.json');
-        
-        if (file_exists($jsonPath)) {
-            $jsonContent = file_get_contents($jsonPath);
-            $cities = json_decode($jsonContent, true);
-            
-            if (is_array($cities) && count($cities) > 0) {
-                $cityOptions = [];
-                foreach ($cities as $city) {
-                    $cityOptions[$city] = $city;
-                }
-                return $cityOptions;
-            }
-        }
-        
-        // If JSON loading fails, return empty array
         return [];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | OVERRIDE STORE / UPDATE (NESTED PERSON FIELDS)
+    |--------------------------------------------------------------------------
+    */
+
+    public function store()
+    {
+        $request = $this->crud->validateRequest();
+        $data = $request->all();
+
+        $userModel = $this->crud->getModel();
+        $userFillable = (new $userModel)->getFillable();
+        $data = collect($data)->only($userFillable)->toArray();
+
+        $personData = $request->input('person', []);
+        $personFillable = (new \App\Models\Person)->getFillable();
+        $personData = collect($personData)->only($personFillable)->toArray();
+        // Preserve file upload for profile_picture
+        if ($request->hasFile('person.profile_picture')) {
+            $personData['profile_picture'] = $request->file('person.profile_picture');
+        }
+
+        $user = $userModel::create($data);
+
+        if (!empty($personData)) {
+            $user->person()->create($personData);
+        }
+
+        return $this->crud->performSaveAction($user->id);
+    }
+
+    public function update($id)
+    {
+        $request = $this->crud->validateRequest();
+        $data = $request->all();
+
+        $user = $this->crud->getModel()::findOrFail($id);
+        $userFillable = $user->getFillable();
+        $data = collect($data)->only($userFillable)->toArray();
+
+        $personData = $request->input('person', []);
+        $personFillable = (new \App\Models\Person)->getFillable();
+        $personData = collect($personData)->only($personFillable)->toArray();
+        // Preserve file upload for profile_picture
+        if ($request->hasFile('person.profile_picture')) {
+            $personData['profile_picture'] = $request->file('person.profile_picture');
+        }
+
+        $user->update($data);
+
+        if (!empty($personData)) {
+            $user->person
+                ? $user->person->update($personData)
+                : $user->person()->create($personData);
+        }
+
+        return $this->crud->performSaveAction($id);
     }
 }
