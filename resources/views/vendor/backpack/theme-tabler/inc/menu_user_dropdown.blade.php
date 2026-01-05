@@ -22,9 +22,9 @@
             </a>
                 <div class="dropdown-divider"></div>
             @endif
-            <a class="dropdown-item" href="{{ backpack_url('logout') }}">
-                <i class="la la-lock"></i> {{ trans('backpack::base.logout') }}
-            </a>
+            <!--<a class="dropdown-item" href="{{ backpack_url('logout') }}">-->
+            <!--    <i class="la la-lock"></i> {{ trans('backpack::base.logout') }}-->
+            <!--</a>-->
         </div>
     </li>
 @endif
