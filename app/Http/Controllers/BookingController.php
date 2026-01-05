@@ -7,13 +7,14 @@ use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class BookingController extends Controller
 {
     public function show($serviceId)
     {
         // Check if user is authenticated
         if (!Auth::check()) {
-            return redirect()->route('register', ['type' => 'client', 'redirect' => route('booking.show', $serviceId)])
+            return redirect()->route('register', ['type' => 'client', 'redirect' => route('client.booking.show', $serviceId)])
                 ->with('message', 'Please register as a client to book this service.');
         }
         
@@ -50,6 +51,8 @@ class BookingController extends Controller
         return redirect()->route('client.booking.confirmation', $booking->id)
             ->with('success', 'Booking request submitted successfully!');
     }
+    
+
 
     public function confirmation($bookingId)
     {
@@ -64,9 +67,13 @@ class BookingController extends Controller
         ]);
 
         // Make sure the booking belongs to the authenticated user
-        if ($booking->client_id !== Auth::id()) {
-            abort(403);
-        }
+        // if ($booking->client_id !== Auth::id()) {
+        //     abort(403);
+        // }
+        
+        if ((int) $booking->client_id !== (int) Auth::id()) {
+    abort(403);
+}
 
         return view('booking.confirmation', compact('booking'));
     }

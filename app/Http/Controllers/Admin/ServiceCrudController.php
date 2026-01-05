@@ -188,7 +188,7 @@ class ServiceCrudController extends CrudController
         
         $serviceNames = \App\Models\Selection::where('table', 'services')
             ->where('field', 'skills')
-            ->pluck('code', 'name')
+            ->pluck('name', 'name')
             ->toArray();
         
         CRUD::field('name')

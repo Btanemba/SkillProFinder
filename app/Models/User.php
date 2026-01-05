@@ -50,6 +50,10 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public function getNameAttribute()
+{
+    return trim("{$this->first_name} {$this->last_name}");
+}
 
     public function person()
     {

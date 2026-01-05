@@ -62,8 +62,12 @@ Route::get('/api/cities/{countryCode}', function ($countryCode) {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/book-service/{service}', [BookingController::class, 'show'])->name('client.booking.show');
     Route::post('/book-service', [BookingController::class, 'store'])->name('client.booking.store');
-    Route::get('/booking-confirmation/{booking}', [BookingController::class, 'confirmation'])->name('client.booking.confirmation');
+   
     Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('booking.my-bookings');
     Route::get('/provider-bookings', [BookingController::class, 'providerBookings'])->name('booking.provider-bookings');
 });
+ Route::get('/booking-confirmation/{booking}', [BookingController::class, 'confirmation'])->name('client.booking.confirmation');
+ 
+
+
 
